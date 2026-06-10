@@ -41,6 +41,7 @@ import okhttp3.ResponseBody;
 public class MainHook extends XposedModule {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private static final String TAG = "CWPDFSaver";
+    private static boolean hasShownPopup = false;
 
     public MainHook() {
         super();
@@ -93,6 +94,24 @@ public class MainHook extends XposedModule {
                 Method onCreateNew = pdfViewerClassNew.getDeclaredMethod("onCreate", Bundle.class);
                 hook(onCreateNew).intercept(activityOnCreateHooker);
             } catch (Throwable t) { Log.e(TAG, "Error hooking new PDF viewer", t); }
+
+            // Hook Activity onResume to show welcome popup once
+            XposedInterface.Hooker activityOnResumeHooker = new XposedInterface.Hooker() {
+                @Override
+                public Object intercept(XposedInterface.Chain chain) throws Throwable {
+                    Object result = chain.proceed();
+                    if (!hasShownPopup) {
+                        hasShownPopup = true;
+                        Activity activity = (Activity) chain.getThisObject();
+                        showWelcomePopup(activity);
+                    }
+                    return result;
+                }
+            };
+            try {
+                Method onResumeMethod = Activity.class.getDeclaredMethod("onResume");
+                hook(onResumeMethod).intercept(activityOnResumeHooker);
+            } catch (Throwable t) { Log.e(TAG, "Error hooking Activity.onResume", t); }
 
         } catch (Throwable t) {
             Log.e(TAG, "onPackageLoaded Error", t);
@@ -253,5 +272,31 @@ public class MainHook extends XposedModule {
         new Handler(Looper.getMainLooper()).post(() -> {
             Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show();
         });
+    }
+
+    private void showWelcomePopup(Activity activity) {
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            try {
+                if (activity.isFinishing() || activity.isDestroyed()) return;
+                android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(activity);
+                builder.setTitle("CW Pharmacy PDF Saver");
+                builder.setMessage("Module is active! 🚀\n\nMade by myst-25.\nKnowledge must be free, accessible, and shareable for all.");
+                builder.setCancelable(true);
+                builder.setPositiveButton("Join Telegram", (dialog, which) -> {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/myst2123"));
+                    activity.startActivity(intent);
+                });
+                builder.setNegativeButton("Star on GitHub", (dialog, which) -> {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/myst-25/CW-pharma"));
+                    activity.startActivity(intent);
+                });
+                builder.setNeutralButton("Dismiss", (dialog, which) -> {
+                    dialog.dismiss();
+                });
+                builder.show();
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to show popup", e);
+            }
+        }, 500); // 500ms delay to ensure activity window is fully attached
     }
 }
