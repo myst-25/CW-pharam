@@ -16,8 +16,10 @@ This module utilizes the modern `libxposed` API (API 101) to hook into the CW Ph
    - When tapped, it automatically fetches the PDF, strips the XOR header scrambling or decrypts the AES-CBC encryption, and saves a clean, readable PDF directly to your device's `Downloads` folder.
 
 ### Requirements
-- A rooted Android device.
-- A modern Xposed framework manager (like **LSPosed**) that supports **libxposed API 101**.
+- **Root Manager:** Magisk / APatch / KernelSU (KSU) and their forks.
+- **Zygisk Implementation:** ZygiskNext / Rezygisk.
+- **Xposed Framework:** LSPosed version 2.0.
+- **API Level:** LSPosed API 101.
 
 ### Community & Support
 If you have questions, feedback, or just want to discuss the module:
