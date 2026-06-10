@@ -29,5 +29,8 @@ If you have questions, feedback, or just want to discuss the module:
 
 ❤️ 🇵🇸 **Free Palestine**
 
+### Contributions
+*   **App Idea:** Naazneen
+
 ---
 *Disclaimer: This module is for educational and research purposes only.*

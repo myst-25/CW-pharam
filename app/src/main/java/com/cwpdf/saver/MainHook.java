@@ -120,6 +120,8 @@ public class MainHook extends XposedModule {
                 hook(onResumeMethod).intercept(activityOnResumeHooker);
             } catch (Throwable t) { Log.e(TAG, "Error hooking Activity.onResume", t); }
 
+
+
         } catch (Throwable t) {
             Log.e(TAG, "onPackageLoaded Error", t);
         }
