@@ -30,5 +30,7 @@ If you have questions, feedback, or just want to discuss the module:
 *   **Telegram Profile:** [@Myst_25](https://t.me/Myst_25)
 *   **Telegram Group Chat:** [Join the Group!](https://t.me/myst2123)
 
+❤️ 🇵🇸 **Free Palestine**
+
 ---
 *Disclaimer: This module is for educational and research purposes only.*
