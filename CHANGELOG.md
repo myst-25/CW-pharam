@@ -2,7 +2,7 @@
 
 All notable changes to the CW Pharmacy PDF Saver will be documented in this file.
 
-## [v1.0.3] - 2026-06-10
+## [v1.2.0] - 2026-06-10
 ### Added
 - Injected a global welcome popup dialog when launching CW Pharmacy to confirm module activation.
 - Added quick action buttons on the popup to Join the Telegram Community and Star the project on GitHub.
