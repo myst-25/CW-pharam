@@ -55,17 +55,12 @@ jobs:
       - name: Build Release APK
         run: ./gradlew assembleRelease
 
-      - name: Get and Rename APK
+      - name: Get APK Path
         id: apk-path
         run: |
-          APK_FILE=$(find app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
-          NEW_APK_NAME="cw-pharma-${{ env.version_tag }}-myst25.apk"
-          
+          APK_FILE=$(find app/build/outputs/apk/release/ -name "cw-pharma-*.apk" | head -n 1)
           echo "Found APK: $APK_FILE"
-          echo "Renaming to: $NEW_APK_NAME"
-          
-          mv "$APK_FILE" "$NEW_APK_NAME"
-          echo "apk_path=$NEW_APK_NAME" >> $GITHUB_ENV
+          echo "apk_path=$APK_FILE" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         id: create_release

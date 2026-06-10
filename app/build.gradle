@@ -26,6 +26,14 @@ android {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            if (variant.name == "release") {
+                outputFileName = "cw-pharma-v${variant.versionName}-myst25.apk"
+            }
+        }
+    }
 }
 
 dependencies {
