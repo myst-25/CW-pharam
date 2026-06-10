@@ -1,5 +1,7 @@
 # CW Pharmacy PDF Saver & Paywall Bypass
 
+> *"Knowledge must be free, accessible, and shareable for all."*
+
 An Xposed/LSPosed module designed to enhance the **CW Pharmacy** educational app. 
 
 ### What is CW Pharmacy?
