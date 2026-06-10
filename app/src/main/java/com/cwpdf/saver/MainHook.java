@@ -180,7 +180,7 @@ public class MainHook extends XposedModule {
 
                 File downDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                 String safeTitle = (title != null && !title.isEmpty()) ? title.replaceAll("[^a-zA-Z0-9._-]", "_") : "document";
-                File outFile = new File(downDir, safeTitle + "_" + System.currentTimeMillis() + ".pdf");
+                File outFile = new File(downDir, safeTitle + "_myst25_" + System.currentTimeMillis() + ".pdf");
                 
                 try (FileOutputStream fos = new FileOutputStream(outFile)) {
                     fos.write(pdfBytes);
