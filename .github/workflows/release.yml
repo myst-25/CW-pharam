@@ -1,0 +1,75 @@
+name: Build and Publish Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        description: 'Version Tag (e.g. v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+      changelog:
+        description: 'Changelog / Release Notes'
+        required: true
+        default: 'Initial Release'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Release APK
+        run: ./gradlew assembleRelease
+
+      - name: Get APK Path
+        id: apk-path
+        run: echo "apk_path=app/build/outputs/apk/release/app-release.apk" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.inputs.version_tag }}
+          name: Release ${{ github.event.inputs.version_tag }}
+          body: ${{ github.event.inputs.changelog }}
+          files: ${{ env.apk_path }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send APK to Telegram Group
+        env:
+          # We use a Secret here because GitHub automatically revokes Telegram tokens if they are hardcoded in public files!
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: '@myst2123'
+          RELEASE_URL: 'https://github.com/myst-25/CW-pharam/releases/tag/${{ github.event.inputs.version_tag }}'
+          REPO_URL: 'https://github.com/myst-25/CW-pharam'
+        run: |
+          CAPTION="🚀 *New CW Pharmacy PDF Saver Release: ${{ github.event.inputs.version_tag }}*
+          
+          📝 *Changelog:*
+          ${{ github.event.inputs.changelog }}
+          
+          📦 *GitHub Repository:* [CW-pharam]($REPO_URL)
+          🔗 *Release Page:* [Download / View Release]($RELEASE_URL)
+          
+          _Install this APK to use the new module update!_"
+          
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument" \
+            -F chat_id="${TELEGRAM_CHAT_ID}" \
+            -F document="@${{ env.apk_path }}" \
+            -F caption="$CAPTION" \
+            -F parse_mode="Markdown"
