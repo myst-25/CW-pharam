@@ -57,51 +57,7 @@ public class MainHook extends XposedModule {
         try {
             ClassLoader classLoader = param.getDefaultClassLoader();
             
-            // 1. Hook Paywall (CourseModel)
-            try {
-                Class<?> courseModelClass = classLoader.loadClass("com.appx.core.model.CourseModel");
-                Method getIsPaid = courseModelClass.getDeclaredMethod("getIsPaid");
-                hook(getIsPaid).intercept(new XposedInterface.Hooker() {
-                    @Override
-                    public Object intercept(XposedInterface.Chain chain) throws Throwable {
-                        return "1"; // Return 1 indicating it is paid
-                    }
-                });
-                Log.d(TAG, "Hooked CourseModel.getIsPaid");
-            } catch (Throwable t) { Log.e(TAG, "Error hooking CourseModel", t); }
-
-            // 2. Hook Paywall (TestSeriesModel)
-            try {
-                Class<?> testSeriesModelClass = classLoader.loadClass("com.appx.core.model.TestSeriesModel");
-                Method getIsPaid = testSeriesModelClass.getDeclaredMethod("getIsPaid");
-                Method isPaid = testSeriesModelClass.getDeclaredMethod("isPaid");
-                
-                XposedInterface.Hooker stringOneHooker = new XposedInterface.Hooker() {
-                    @Override
-                    public Object intercept(XposedInterface.Chain chain) throws Throwable {
-                        return "1";
-                    }
-                };
-                
-                hook(getIsPaid).intercept(stringOneHooker);
-                hook(isPaid).intercept(stringOneHooker);
-                Log.d(TAG, "Hooked TestSeriesModel");
-            } catch (Throwable t) { Log.e(TAG, "Error hooking TestSeriesModel", t); }
-
-            // 3. Hook Paywall (FolderCourseModel)
-            try {
-                Class<?> folderCourseModelClass = classLoader.loadClass("com.appx.core.model.FolderCourseModel");
-                Method isPaid = folderCourseModelClass.getDeclaredMethod("isPaid");
-                hook(isPaid).intercept(new XposedInterface.Hooker() {
-                    @Override
-                    public Object intercept(XposedInterface.Chain chain) throws Throwable {
-                        return 1; // Integer 1
-                    }
-                });
-                Log.d(TAG, "Hooked FolderCourseModel");
-            } catch (Throwable t) { Log.e(TAG, "Error hooking FolderCourseModel", t); }
-
-            // 4. Hook PDF Viewer Activities
+            // Hook PDF Viewer Activities
             XposedInterface.Hooker activityOnCreateHooker = new XposedInterface.Hooker() {
                 @Override
                 public Object intercept(XposedInterface.Chain chain) throws Throwable {

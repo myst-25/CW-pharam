@@ -1,4 +1,4 @@
-# CW Pharmacy PDF Saver & Paywall Bypass
+# CW Pharmacy PDF Saver
 
 > *"Knowledge must be free, accessible, and shareable for all."*
 
@@ -8,17 +8,12 @@ An Xposed/LSPosed module designed to enhance the **CW Pharmacy** educational app
 CW Pharmacy is an educational application (built on the Appx white-label platform) designed for pharmacy students. It provides video courses, live streams, test series, and PDF study materials.
 
 ### What does this Module do?
-This module utilizes the modern `libxposed` API (API 101) to hook into the CW Pharmacy app and provide two main features:
+This module utilizes the modern `libxposed` API (API 101) to hook into the CW Pharmacy app and provide the following feature:
 
 1. **PDF Downloader & Decryptor**
    - The app natively restricts downloading or sharing study materials and scrambles/encrypts PDFs so they cannot be opened by standard viewers.
    - This module injects a custom Material Design Download button (a floating blue "DL" button) directly into the app's built-in PDF viewer.
    - When tapped, it automatically fetches the PDF, strips the XOR header scrambling or decrypts the AES-CBC encryption, and saves a clean, readable PDF directly to your device's `Downloads` folder.
-
-2. **Client-Side Paywall Bypass**
-   - Injects hooks into core data models (`CourseModel`, `TestSeriesModel`, `FolderCourseModel`) to spoof the `isPaid` status.
-   - This unlocks the UI for premium courses and folders, removing the lock icons. 
-   - *(Note: While the UI is unlocked, if CW Pharmacy strictly enforces a server-side check before serving the actual media files, some premium videos or PDFs may still fail to load.)*
 
 ### Requirements
 - A rooted Android device.
