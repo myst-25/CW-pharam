@@ -100,9 +100,16 @@ public class MainHook extends XposedModule {
                 @Override
                 public Object intercept(XposedInterface.Chain chain) throws Throwable {
                     Object result = chain.proceed();
+                    Activity activity = (Activity) chain.getThisObject();
+                    
+                    // Skip splash screens so the popup doesn't get destroyed when the logo disappears
+                    String actName = activity.getClass().getSimpleName().toLowerCase();
+                    if (actName.contains("splash") || actName.contains("launch") || actName.contains("start")) {
+                        return result;
+                    }
+                    
                     if (!hasShownPopup) {
                         hasShownPopup = true;
-                        Activity activity = (Activity) chain.getThisObject();
                         showWelcomePopup(activity);
                     }
                     return result;
@@ -278,22 +285,98 @@ public class MainHook extends XposedModule {
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             try {
                 if (activity.isFinishing() || activity.isDestroyed()) return;
-                android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(activity);
-                builder.setTitle("CW Pharmacy PDF Saver");
-                builder.setMessage("Module is active! 🚀\n\nMade by myst-25.\nKnowledge must be free, accessible, and shareable for all.");
-                builder.setCancelable(true);
-                builder.setPositiveButton("Join Telegram", (dialog, which) -> {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/myst2123"));
-                    activity.startActivity(intent);
+
+                // Create a custom MD3 style dialog from scratch to avoid host app theme dependencies
+                android.app.Dialog dialog = new android.app.Dialog(activity);
+                dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+                if (dialog.getWindow() != null) {
+                    dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
+                }
+
+                android.widget.LinearLayout container = new android.widget.LinearLayout(activity);
+                container.setOrientation(android.widget.LinearLayout.VERTICAL);
+                container.setPadding(dpToPx(activity, 24), dpToPx(activity, 24), dpToPx(activity, 24), dpToPx(activity, 24));
+                
+                android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+                int nightModeFlags = activity.getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+                boolean isDarkMode = nightModeFlags == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+                bg.setColor(isDarkMode ? 0xFF2D2F31 : 0xFFF3F4F9); // MD3 surface color
+                bg.setCornerRadius(dpToPx(activity, 28)); // MD3 Dialog corner radius
+                container.setBackground(bg);
+
+                // Title
+                android.widget.TextView title = new android.widget.TextView(activity);
+                title.setText("CW Pharmacy PDF Saver");
+                title.setTextSize(24);
+                title.setTextColor(isDarkMode ? 0xFFE3E2E6 : 0xFF1A1C1E);
+                title.setTypeface(null, android.graphics.Typeface.BOLD);
+                container.addView(title);
+
+                // Message
+                android.widget.TextView message = new android.widget.TextView(activity);
+                message.setText("Module is active! 🚀\n\nMade by myst-25.\nKnowledge must be free, accessible, and shareable for all.");
+                message.setTextSize(14);
+                message.setTextColor(isDarkMode ? 0xFFC4C6D0 : 0xFF44474E);
+                message.setPadding(0, dpToPx(activity, 16), 0, dpToPx(activity, 24));
+                container.addView(message);
+
+                // Buttons container
+                android.widget.LinearLayout buttonContainer = new android.widget.LinearLayout(activity);
+                buttonContainer.setOrientation(android.widget.LinearLayout.VERTICAL);
+                buttonContainer.setGravity(Gravity.CENTER_HORIZONTAL);
+
+                android.widget.LinearLayout.LayoutParams btnParams = new android.widget.LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, dpToPx(activity, 48)
+                );
+                btnParams.bottomMargin = dpToPx(activity, 8);
+
+                // Telegram Button (Primary Filled)
+                android.widget.Button btnTelegram = new android.widget.Button(activity);
+                btnTelegram.setText("Join Telegram");
+                btnTelegram.setTextColor(isDarkMode ? 0xFF00325B : 0xFFFFFFFF);
+                btnTelegram.setAllCaps(false);
+                android.graphics.drawable.GradientDrawable btnTelBg = new android.graphics.drawable.GradientDrawable();
+                btnTelBg.setColor(isDarkMode ? 0xFFD1E4FF : 0xFF0061A4);
+                btnTelBg.setCornerRadius(dpToPx(activity, 24)); // Pill shape
+                btnTelegram.setBackground(btnTelBg);
+                btnTelegram.setOnClickListener(v -> {
+                    activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/myst2123")));
                 });
-                builder.setNegativeButton("Star on GitHub", (dialog, which) -> {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/myst-25/CW-pharma"));
-                    activity.startActivity(intent);
+                buttonContainer.addView(btnTelegram, btnParams);
+
+                // GitHub Button (Secondary Tonal)
+                android.widget.Button btnGithub = new android.widget.Button(activity);
+                btnGithub.setText("Star on GitHub");
+                btnGithub.setTextColor(isDarkMode ? 0xFFE3E2E6 : 0xFF1A1C1E);
+                btnGithub.setAllCaps(false);
+                android.graphics.drawable.GradientDrawable btnGitBg = new android.graphics.drawable.GradientDrawable();
+                btnGitBg.setColor(isDarkMode ? 0xFF44474E : 0xFFE0E2EC);
+                btnGitBg.setCornerRadius(dpToPx(activity, 24));
+                btnGithub.setBackground(btnGitBg);
+                btnGithub.setOnClickListener(v -> {
+                    activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/myst-25/CW-pharma")));
                 });
-                builder.setNeutralButton("Dismiss", (dialog, which) -> {
-                    dialog.dismiss();
-                });
-                builder.show();
+                buttonContainer.addView(btnGithub, btnParams);
+
+                // Close Button (Text style)
+                android.widget.Button btnClose = new android.widget.Button(activity);
+                btnClose.setText("Close");
+                btnClose.setTextColor(isDarkMode ? 0xFFAEC6FF : 0xFF0061A4);
+                btnClose.setAllCaps(false);
+                btnClose.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+                btnClose.setOnClickListener(v -> dialog.dismiss());
+                buttonContainer.addView(btnClose, btnParams);
+
+                container.addView(buttonContainer);
+
+                dialog.setContentView(container);
+                dialog.setCancelable(true);
+                
+                int width = (int)(activity.getResources().getDisplayMetrics().widthPixels * 0.85);
+                dialog.getWindow().setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT);
+                
+                dialog.show();
+
             } catch (Exception e) {
                 Log.e(TAG, "Failed to show popup", e);
             }
