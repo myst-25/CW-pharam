@@ -18,8 +18,8 @@ jobs:
       - name: Extract Version and Changelog
         id: extract
         run: |
-          # 1. Extract Version Name from build.gradle
-          VERSION_NAME=$(grep 'versionName' app/build.gradle | awk -F '"' '{print $2}')
+          # 1. Extract Version Name strictly from the main configuration block
+          VERSION_NAME=$(grep -E '^[ \t]*versionName\s+"' app/build.gradle | awk -F '"' '{print $2}')
           VERSION_TAG="v$VERSION_NAME"
           
           # 2. Automatically get commit messages since last tag
