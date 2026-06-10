@@ -2,15 +2,6 @@ name: Build and Publish Release
 
 on:
   workflow_dispatch:
-    inputs:
-      version_tag:
-        description: 'Version Tag (e.g. v1.0.0)'
-        required: true
-        default: 'v1.0.0'
-      changelog:
-        description: 'Changelog / Release Notes'
-        required: true
-        default: 'Initial Release'
 
 jobs:
   build-and-release:
@@ -21,6 +12,35 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract Version and Changelog
+        id: extract
+        run: |
+          # 1. Extract Version Name from build.gradle
+          VERSION_NAME=$(grep 'versionName' app/build.gradle | awk -F '"' '{print $2}')
+          VERSION_TAG="v$VERSION_NAME"
+          
+          # 2. Automatically get commit messages since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            CHANGELOG=$(git log -1 --pretty=format:"- %s")
+          else
+            CHANGELOG=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s")
+            # Fallback to latest commit if nothing found (e.g. running on the same commit)
+            if [ -z "$CHANGELOG" ]; then
+              CHANGELOG=$(git log -1 --pretty=format:"- %s")
+            fi
+          fi
+          
+          echo "version_tag=$VERSION_TAG" >> $GITHUB_ENV
+          
+          # Handle multiline string for GitHub Environment Variables
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "changelog<<$EOF" >> $GITHUB_ENV
+          echo "$CHANGELOG" >> $GITHUB_ENV
+          echo "$EOF" >> $GITHUB_ENV
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -39,7 +59,7 @@ jobs:
         id: apk-path
         run: |
           APK_FILE=$(find app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
-          NEW_APK_NAME="cw-pharma-${{ github.event.inputs.version_tag }}-myst25.apk"
+          NEW_APK_NAME="cw-pharma-${{ env.version_tag }}-myst25.apk"
           
           echo "Found APK: $APK_FILE"
           echo "Renaming to: $NEW_APK_NAME"
@@ -51,28 +71,27 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.event.inputs.version_tag }}
-          name: Release ${{ github.event.inputs.version_tag }}
-          body: ${{ github.event.inputs.changelog }}
+          tag_name: ${{ env.version_tag }}
+          name: Release ${{ env.version_tag }}
+          body: ${{ env.changelog }}
           files: ${{ env.apk_path }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Send APK to Telegram Group
         env:
-          # We use a Secret here because GitHub automatically revokes Telegram tokens if they are hardcoded in public files!
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: '@myst2123'
-          RELEASE_URL: 'https://github.com/myst-25/CW-pharam/releases/tag/${{ github.event.inputs.version_tag }}'
+          RELEASE_URL: 'https://github.com/myst-25/CW-pharam/releases/tag/${{ env.version_tag }}'
           REPO_URL: 'https://github.com/myst-25/CW-pharam'
         run: |
           echo "Verifying APK at $apk_path"
           ls -la "$apk_path"
           
-          CAPTION="<b>🚀 New CW Pharmacy PDF Saver Release: ${{ github.event.inputs.version_tag }}</b>
+          CAPTION="<b>🚀 New CW Pharmacy PDF Saver Release: ${{ env.version_tag }}</b>
           
           <b>📝 Changelog:</b>
-          ${{ github.event.inputs.changelog }}
+          ${{ env.changelog }}
           
           📦 <a href=\"$REPO_URL\">GitHub Repository</a>
           🔗 <a href=\"$RELEASE_URL\">Download / View Release</a>
