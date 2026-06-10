@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Needed to download the PDF file -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <application
+        android:label="CW PDF Saver"
+        android:icon="@drawable/ic_launcher"
+        android:description="@string/app_description"
+        android:allowBackup="false">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Material3.DayNight.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--
+            LSPosed reads this meta-data to know:
+            1. This is an Xposed module
+            2. Which package(s) to hook
+        -->
+        <meta-data
+            android:name="libxposed_init"
+            android:value="com.cwpdf.saver.MainHook" />
+
+        <!--
+            Scope restriction: only inject into this app.
+            LSPosed uses this for its scope UI.
+        -->
+        <meta-data
+            android:name="xposedscope"
+            android:value="com.gvxhgw.qwporr" />
+
+    </application>
+</manifest>

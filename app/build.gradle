@@ -1,0 +1,42 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.cwpdf.saver'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "com.cwpdf.saver"
+        minSdk 26
+        targetSdk 36
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+}
+
+dependencies {
+    // LSPosed / Xposed API — compileOnly so it's NOT bundled in the APK
+    compileOnly 'io.github.libxposed:api:101.0.1'
+    compileOnly 'de.robv.android.xposed:api:82:sources'
+
+    // OkHttp for downloading the PDF inside the hook
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    
+    // UI dependencies for Material Design 3
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+}
