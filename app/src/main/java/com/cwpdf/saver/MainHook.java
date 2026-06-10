@@ -111,7 +111,7 @@ public class MainHook extends XposedModule {
 
         android.widget.TextView btnView = new android.widget.TextView(activity);
         btnView.setTag("cw_pdf_download_btn");
-        btnView.setText("DL");
+        btnView.setText("⬇️");
         btnView.setTextColor(android.graphics.Color.WHITE);
         btnView.setGravity(Gravity.CENTER);
         btnView.setTextSize(16);
