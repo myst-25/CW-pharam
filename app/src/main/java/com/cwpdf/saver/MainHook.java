@@ -45,7 +45,18 @@ public class MainHook extends XposedModule {
 
     public MainHook() {
         super();
-        Log.d(TAG, "MainHook instantiated (libxposed API 101)");
+        Log.d(TAG, "MainHook instantiated (libxposed API 102)");
+    }
+
+    @Override
+    public boolean onHotReloading(XposedModuleInterface.HotReloadingParam param) {
+        Log.d(TAG, "onHotReloading: module is preparing to hot reload");
+        return true;
+    }
+
+    @Override
+    public void onHotReloaded(XposedModuleInterface.HotReloadedParam param) {
+        Log.d(TAG, "onHotReloaded: module hot reload complete");
     }
 
     @Override

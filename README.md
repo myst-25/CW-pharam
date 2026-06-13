@@ -19,7 +19,7 @@ This module utilizes the modern `libxposed` API (API 101) to hook into the CW Ph
 - **Root Manager:** Magisk / APatch / KernelSU (KSU) and their forks.
 - **Zygisk Implementation:** ZygiskNext / Rezygisk.
 - **Xposed Framework:** LSPosed version 2.0.
-- **API Level:** LSPosed API 101.
+- **API Level:** LSPosed API 102.
 
 ### Community & Support
 If you have questions, feedback, or just want to discuss the module:
