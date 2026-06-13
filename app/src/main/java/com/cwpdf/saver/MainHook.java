@@ -131,6 +131,31 @@ public class MainHook extends XposedModule {
                 hook(onResumeMethod).intercept(activityOnResumeHooker);
             } catch (Throwable t) { Log.e(TAG, "Error hooking Activity.onResume", t); }
 
+            // Screenshot Bypass (FLAG_SECURE)
+            XposedInterface.Hooker windowSetFlagsHooker = new XposedInterface.Hooker() {
+                @Override
+                public Object intercept(XposedInterface.Chain chain) throws Throwable {
+                    Object[] args = chain.getArgs().toArray();
+                    if (args != null && args.length >= 2) {
+                        int flags = (int) args[0];
+                        int mask = (int) args[1];
+                        
+                        // FLAG_SECURE is 8192 (0x2000)
+                        if ((flags & android.view.WindowManager.LayoutParams.FLAG_SECURE) != 0) {
+                            Log.d(TAG, "Intercepted FLAG_SECURE, clearing it to allow screenshots.");
+                            args[0] = flags & ~android.view.WindowManager.LayoutParams.FLAG_SECURE;
+                            return chain.proceed(args);
+                        }
+                    }
+                    return chain.proceed();
+                }
+            };
+            try {
+                Method setFlagsMethod = android.view.Window.class.getDeclaredMethod("setFlags", int.class, int.class);
+                hook(setFlagsMethod).intercept(windowSetFlagsHooker);
+                Log.d(TAG, "Successfully hooked Window.setFlags for screenshot bypass.");
+            } catch (Throwable t) { Log.e(TAG, "Error hooking Window.setFlags", t); }
+
 
 
         } catch (Throwable t) {
